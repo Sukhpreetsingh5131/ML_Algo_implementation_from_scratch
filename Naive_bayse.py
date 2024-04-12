@@ -38,7 +38,7 @@ var_X_class_1 = X_class_1.var(axis=0)
 
 mean = np.array([mean_X_class_0, mean_X_class_1])
 var = np.array([var_X_class_0, var_X_class_1])
-print('i love my jaan')
+
 print("Mean for class 0:", mean_X_class_0)
 print("Variance for class 0:", var_X_class_0)
 print("Mean for class 1:", mean_X_class_1)
