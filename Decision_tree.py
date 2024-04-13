@@ -1,48 +1,49 @@
 import numpy as np
-import math
+
+def entropy(count_0, count_1):
+    total = count_0 + count_1
+    p_zero = count_0 / total if total > 0 else 0
+    p_one = count_1 / total if total > 0 else 0
+    entropy_zero = -p_zero * np.log2(p_zero) if p_zero > 0 else 0
+    entropy_one = -p_one * np.log2(p_one) if p_one > 0 else 0
+    return entropy_zero + entropy_one
+
+def calculate_information_gain(X, Y, feature_index):
+    # Extract the column for the feature
+    feature_values = X[:, feature_index]
+    total_entropy = entropy(np.sum(Y == 0), np.sum(Y == 1))
+    
+    # Find unique values and their entropy
+    unique_values, counts = np.unique(feature_values, return_counts=True)
+    weighted_entropy = 0
+
+    for value, count in zip(unique_values, counts):
+        indices = np.where(feature_values == value)
+        corresponding_Y_values = Y[indices]
+        count_0 = np.sum(corresponding_Y_values == 0)
+        count_1 = np.sum(corresponding_Y_values == 1)
+        value_entropy = entropy(count_0, count_1)
+        weighted_entropy += (count / len(Y)) * value_entropy
+    
+    # Information gain
+    information_gain = total_entropy - weighted_entropy
+    return information_gain
+
+def analyze_features(X, Y):
+    num_features = X.shape[1]
+    information_gains = []
+
+    for i in range(num_features):
+        ig = calculate_information_gain(X, Y, i)
+        information_gains.append(ig)
+        print(f"Information Gain for Feature {i}: {ig}")
+
+    return information_gains
 
 # Example data
-X1 = np.array([1, 2, 3, 4, 5])
-X2 = np.array([3, 4, 1, 4, 5])
+X = np.array([[1, 3], [2, 4], [3, 1], [4, 4], [5, 5]])
 Y = np.array([1, 0, 1, 1, 0])
-X = np.vstack((X1, X2)).T  # Make sure to transpose to get the correct feature columns
 
-# Function to calculate entropy
-def entropy(y):
-    if len(y) == 0:
-        return 0
-    unique, counts = np.unique(y, return_counts=True)
-    probabilities = counts / counts.sum()
-    ent = -np.sum(probabilities * np.log2(probabilities))
-    return ent
-
-# Function to calculate entropy for each value of each feature
-def entropy_of_feature(feature_column, Y):
-    unique_values = np.unique(feature_column)
-    entropy_values = {}
-    for val in unique_values:
-        y_subset = Y[feature_column == val]
-        entropy_val = entropy(y_subset)
-        entropy_values[val] = entropy_val
-    return entropy_values
-
-# Calculate the entropy for the entire dataset
-entropy_dataset = entropy(Y)
-
-# Calculate the IG for each feature and store them
-information_gains = []
-for feature in X.T:
-    total_entropy = 0
-    for feature_value in np.unique(feature):
-        subset = Y[feature == feature_value]
-        weight = len(subset) / len(Y)
-        total_entropy += weight * entropy(subset)
-    IG = entropy_dataset - total_entropy
-    information_gains.append(IG)
-
-# Find the feature with the maximum IG
-max_IG = max(information_gains)
-max_IG_feature = np.argmax(information_gains) + 1  # Adding 1 for human-readable feature index
-
-print(f"Maximum Information Gain: {max_IG}, Feature: {max_IG_feature}")
-#Now once we find out the Root node of feature 
+# Calculate information gains for each feature
+information_gains = analyze_features(X, Y)
+print(information_gains)
